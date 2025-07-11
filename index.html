@@ -1,0 +1,1747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tehillz - Next-Gen Song Recognition</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --accent-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --dark-bg: #0a0a0a;
+            --card-bg: rgba(255, 255, 255, 0.1);
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --success-color: #00ff88;
+            --warning-color: #ffaa00;
+            --error-color: #ff4444;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 80%, rgba(120, 219, 255, 0.3) 0%, transparent 50%);
+            z-index: -1;
+            animation: bgMove 20s ease-in-out infinite;
+        }
+
+        @keyframes bgMove {
+            0%, 100% { transform: translateX(0) translateY(0); }
+            33% { transform: translateX(30px) translateY(-30px); }
+            66% { transform: translateX(-20px) translateY(20px); }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(20px);
+            z-index: 1000;
+            padding: 15px 0;
+            transition: all 0.3s ease;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: 'Poppins', sans-serif;
+            font-size: 2rem;
+            font-weight: 800;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 30px;
+        }
+
+        .nav-links a {
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+            padding: 8px 0;
+        }
+
+        .nav-links a::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent-gradient);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover::before {
+            width: 100%;
+        }
+
+        .nav-links a:hover {
+            color: #4facfe;
+        }
+
+        /* Main Content */
+        main {
+            margin-top: 80px;
+        }
+
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            padding: 40px;
+        }
+
+        .hero h1 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 4rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+            animation: fadeInUp 1s ease-out 0.2s both;
+        }
+
+        .listen-button {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            border: none;
+            background: var(--primary-gradient);
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            animation: fadeInUp 1s ease-out 0.4s both;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .listen-button::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: rotate(45deg);
+            transition: all 0.3s ease;
+        }
+
+        .listen-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
+        }
+
+        .listen-button:hover::before {
+            animation: shimmer 1s ease-in-out;
+        }
+
+        .listen-button:active {
+            transform: scale(0.95);
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        .pulse-ring {
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            border: 3px solid rgba(102, 126, 234, 0.3);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .pulse-ring:nth-child(2) {
+            animation-delay: 0.5s;
+        }
+
+        .pulse-ring:nth-child(3) {
+            animation-delay: 1s;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1.3);
+                opacity: 0;
+            }
+        }
+
+        /* Features Section */
+        .features {
+            padding: 100px 0;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+        }
+
+        .features h2 {
+            text-align: center;
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 60px;
+            background: var(--secondary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .feature-card {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--accent-gradient);
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover::before {
+            transform: translateX(0);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+        }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* Recent Section */
+        .recent {
+            padding: 100px 0;
+        }
+
+        .recent h2 {
+            text-align: center;
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 60px;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .recent-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .recent-item {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .recent-item:hover {
+            transform: translateX(10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .album-art {
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            background: var(--secondary-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .song-info h4 {
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+
+        .song-info p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* AI Assistant */
+        .ai-assistant {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--secondary-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .ai-assistant:hover {
+            transform: scale(1.1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .ai-chat {
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            width: 350px;
+            height: 500px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(20px);
+            display: none;
+            flex-direction: column;
+            z-index: 1000;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .ai-chat-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .ai-chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .ai-chat-input {
+            padding: 20px;
+            border-top: 1px solid var(--glass-border);
+            display: flex;
+            gap: 10px;
+        }
+
+        .ai-chat-input input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            background: var(--glass-bg);
+            color: var(--text-primary);
+        }
+
+        .ai-chat-input button {
+            padding: 10px 15px;
+            background: var(--accent-gradient);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(20px);
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeInUp 1s ease-out;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .listen-button {
+                width: 150px;
+                height: 150px;
+            }
+
+            .pulse-ring {
+                width: 170px;
+                height: 170px;
+            }
+
+            .features h2,
+            .recent h2 {
+                font-size: 2rem;
+            }
+
+            .ai-chat {
+                width: 90%;
+                right: 5%;
+            }
+        }
+
+        /* Audio Visualizer */
+        .audio-visualizer {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 100px;
+            display: none;
+            justify-content: center;
+            align-items: end;
+            gap: 4px;
+        }
+
+        .bar {
+            width: 4px;
+            background: var(--accent-gradient);
+            border-radius: 2px;
+            animation: visualizer 1s infinite alternate;
+        }
+
+        @keyframes visualizer {
+            0% { height: 5px; }
+            100% { height: 50px; }
+        }
+
+        .listening-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            flex-direction: column;
+        }
+
+        .listening-content {
+            text-align: center;
+            color: white;
+        }
+
+        .listening-content h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .wave-animation {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+            margin: 30px 0;
+        }
+
+        .wave-bar {
+            width: 6px;
+            height: 20px;
+            background: var(--accent-gradient);
+            border-radius: 3px;
+            animation: wave 1s infinite;
+        }
+
+        .wave-bar:nth-child(1) { animation-delay: 0s; }
+        .wave-bar:nth-child(2) { animation-delay: 0.1s; }
+        .wave-bar:nth-child(3) { animation-delay: 0.2s; }
+        .wave-bar:nth-child(4) { animation-delay: 0.3s; }
+        .wave-bar:nth-child(5) { animation-delay: 0.4s; }
+
+        @keyframes wave {
+            0%, 100% { transform: scaleY(1); }
+            50% { transform: scaleY(3); }
+        }
+
+        .stop-listening {
+            margin-top: 30px;
+            padding: 15px 30px;
+            background: var(--error-color);
+            border: none;
+            border-radius: 25px;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .stop-listening:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(255, 68, 68, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="animated-bg"></div>
+    
+    <header>
+        <nav class="container">
+            <div class="logo">Tehillz</div>
+            <ul class="nav-links">
+                <li><a href="#home" class="nav-link">Home</a></li>
+                <li><a href="#features" class="nav-link">Features</a></li>
+                <li><a href="#recent" class="nav-link">Recent</a></li>
+                <li><a href="#library" class="nav-link">Library</a></li>
+                <li><a href="#about" class="nav-link">About</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section id="home" class="hero">
+            <div class="container">
+                <div class="hero-content">
+                    <h1>Discover Music Like Never Before</h1>
+                    <p>Revolutionary AI-powered song recognition that goes beyond identification. Discover, explore, and connect with music in ways you never imagined.</p>
+                    
+                    <div style="position: relative; display: inline-block;">
+                        <div class="pulse-ring"></div>
+                        <div class="pulse-ring"></div>
+                        <div class="pulse-ring"></div>
+                        <button class="listen-button" id="listenBtn">
+                            <i class="fas fa-microphone"></i>
+                            <span style="margin-left: 10px;">Listen</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="features">
+            <div class="container">
+                <h2>Next-Gen Features</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <h3>AI-Powered Recognition</h3>
+                        <p>Advanced machine learning algorithms that identify songs faster and more accurately than ever before, even in noisy environments.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-palette"></i>
+                        </div>
+                        <h3>Music Visualization</h3>
+                        <p>Beautiful real-time audio visualizations that dance with your music, creating an immersive visual experience.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h3>Social Discovery</h3>
+                        <p>Connect with friends, share discoveries, and explore what the world is listening to in real-time.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-magic"></i>
+                        </div>
+                        <h3>Smart Recommendations</h3>
+                        <p>Personalized music suggestions based on your listening history and preferences, powered by advanced AI.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-headphones"></i>
+                        </div>
+                        <h3>HiFi Audio Analysis</h3>
+                        <p>Professional-grade audio analysis that captures every nuance and detail of the music.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-globe"></i>
+                        </div>
+                        <h3>Global Music Library</h3>
+                        <p>Access to millions of songs from around the world, including rare tracks and indie artists.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="recent" class="recent">
+            <div class="container">
+                <h2>Recent Discoveries</h2>
+                <div class="recent-grid" id="recentGrid">
+                    <!-- Recent items will be populated by JavaScript -->
+                </div>
+            </div>
+        </section>
+
+
+        <!-- Add this section right after the Recent section in your HTML -->
+<section id="library" class="library">
+    <div class="container">
+        <h2>Your Music Library</h2>
+        <div class="library-controls">
+            <div class="search-box">
+                <input type="text" id="librarySearch" placeholder="Search your library...">
+                <i class="fas fa-search"></i>
+            </div>
+            <div class="sort-options">
+                <select id="sortLibrary">
+                    <option value="recent">Recently Added</option>
+                    <option value="title">Title (A-Z)</option>
+                    <option value="artist">Artist (A-Z)</option>
+                    <option value="oldest">Oldest Added</option>
+                </select>
+            </div>
+        </div>
+        <div class="library-grid" id="libraryGrid">
+            <!-- Library items will be populated by JavaScript -->
+            <div class="empty-library">
+                <i class="fas fa-music"></i>
+                <h3>Your library is empty</h3>
+                <p>Start saving songs to see them here</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="about" class="about">
+    <div class="container">
+        <h2>About Tehillz</h2>
+        <div class="about-content">
+            <div class="about-text">
+                <h3>Revolutionizing Music Discovery</h3>
+                <p>Tehillz is a next-generation music recognition platform that goes beyond simple song identification. Our advanced AI technology not only identifies songs with incredible accuracy but also helps you explore, organize, and connect with music in meaningful ways.</p>
+                <p>Founded in 2023, our mission is to bridge the gap between music discovery and music appreciation. Whether you're a casual listener or a dedicated audiophile, Tehillz provides tools to deepen your musical journey.</p>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-number" id="songsIdentified">10,000+</div>
+                        <div class="stat-label">Songs Identified</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="activeUsers">50,000+</div>
+                        <div class="stat-label">Active Users</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="countries">120+</div>
+                        <div class="stat-label">Countries</div>
+                    </div>
+                </div>
+            </div>
+            <div class="about-image">
+                <div class="image-placeholder">
+                    <i class="fas fa-headphones"></i>
+                </div>
+            </div>
+        </div>
+        <div class="team-section">
+            <h3>Meet The Team</h3>
+            <div class="team-grid">
+                <div class="team-member">
+                    <div class="member-avatar">JD</div>
+                    <h4>John Doe</h4>
+                    <p>Founder & CEO</p>
+                </div>
+                <div class="team-member">
+                    <div class="member-avatar">AS</div>
+                    <h4>Alice Smith</h4>
+                    <p>Lead Developer</p>
+                </div>
+                <div class="team-member">
+                    <div class="member-avatar">RJ</div>
+                    <h4>Robert Johnson</h4>
+                    <p>AI Specialist</p>
+                </div>
+                <div class="team-member">
+                    <div class="member-avatar">MB</div>
+                    <h4>Maria Brown</h4>
+                    <p>UX Designer</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<footer class="site-footer">
+    <div class="footer-content">
+        <div class="footer-logo">
+            <div class="logo">Tehillz</div>
+            <p>Next-Gen Music Recognition</p>
+            <div class="social-links">
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-facebook"></i></a>
+                <a href="#"><i class="fab fa-youtube"></i></a>
+                <a href="#"><i class="fab fa-tiktok"></i></a>
+            </div>
+        </div>
+        <div class="footer-links">
+            <div class="link-group">
+                <h4>Product</h4>
+                <ul>
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="#recent">Recent</a></li>
+                    <li><a href="#library">Library</a></li>
+                    <li><a href="#">Premium</a></li>
+                </ul>
+            </div>
+            <div class="link-group">
+                <h4>Company</h4>
+                <ul>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#">Careers</a></li>
+                    <li><a href="#">Blog</a></li>
+                    <li><a href="#">Press</a></li>
+                </ul>
+            </div>
+            <div class="link-group">
+                <h4>Support</h4>
+                <ul>
+                    <li><a href="#">Help Center</a></li>
+                    <li><a href="#">Contact Us</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-newsletter">
+            <h4>Stay Updated</h4>
+            <p>Subscribe to our newsletter for the latest features and updates</p>
+            <div class="newsletter-form">
+                <input type="email" placeholder="Your email address">
+                <button>Subscribe</button>
+            </div>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>&copy; 2025 Tehillz. All rights reserved.</p>
+        <div class="footer-legal">
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Service</a>
+            <a href="#">Cookies</a>
+        </div>
+    </div>
+</footer>
+
+    </main>
+
+    <!-- AI Assistant -->
+    <div class="ai-assistant" id="aiAssistant">
+        <i class="fas fa-robot"></i>
+    </div>
+
+    <div class="ai-chat" id="aiChat">
+        <div class="ai-chat-header">
+            <i class="fas fa-robot" style="color: #4facfe;"></i>
+            <div>
+                <h4>Music Assistant</h4>
+                <p style="font-size: 0.8rem; color: var(--text-secondary);">Here to help with your music</p>
+            </div>
+        </div>
+        <div class="ai-chat-messages" id="aiMessages">
+            <div style="background: var(--glass-bg); padding: 15px; border-radius: 10px; margin-bottom: 10px;">
+                <p style="font-size: 0.9rem;">👋 Hi! I'm your music assistant. Ask me anything about songs, artists, or music recommendations!</p>
+            </div>
+        </div>
+        <div class="ai-chat-input">
+            <input type="text" id="aiInput" placeholder="Ask me about music...">
+            <button onclick="sendAIMessage()">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Listening Overlay -->
+    <div class="listening-overlay" id="listeningOverlay">
+        <div class="listening-content">
+            <h2>🎵 Listening...</h2>
+            <p>Hold your device close to the music source</p>
+            <div class="wave-animation">
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+            </div>
+            <p id="listeningStatus">Analyzing audio...</p>
+            <button class="stop-listening" onclick="stopListening()">Stop Listening</button>
+        </div>
+    </div>
+
+    <!-- Result Modal -->
+    <div class="modal" id="resultModal">
+        <div class="modal-content" style="position: relative;">
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <div id="resultContent">
+                <!-- Result content will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let isListening = false;
+        let mediaRecorder;
+        let audioStream;
+        let recentSearches = [];
+        let aiConversation = [];
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            loadRecentSearches();
+            setupEventListeners();
+        });
+
+        function initializeApp() {
+            // Add smooth scrolling for navigation
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href').substring(1);
+                    const targetElement = document.getElementById(targetId);
+                    
+                    if (targetElement) {
+                        targetElement.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+
+            // Add intersection observer for animations
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('fade-in');
+                    }
+                });
+            });
+
+            document.querySelectorAll('.feature-card').forEach(card => {
+                observer.observe(card);
+            });
+        }
+
+        function setupEventListeners() {
+            // Listen button
+            document.getElementById('listenBtn').addEventListener('click', startListening);
+
+            // AI Assistant
+            document.getElementById('aiAssistant').addEventListener('click', toggleAIChat);
+
+            // AI Input
+            document.getElementById('aiInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendAIMessage();
+                }
+            });
+
+            // Close AI chat when clicking outside
+            document.addEventListener('click', function(e) {
+                const aiChat = document.getElementById('aiChat');
+                const aiAssistant = document.getElementById('aiAssistant');
+                
+                if (!aiChat.contains(e.target) && !aiAssistant.contains(e.target)) {
+                    aiChat.style.display = 'none';
+                }
+            });
+        }
+
+        async function startListening() {
+            if (isListening) return;
+
+            try {
+                // Request microphone access
+                audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                
+                // Show listening overlay
+                document.getElementById('listeningOverlay').style.display = 'flex';
+                isListening = true;
+
+                // Create media recorder
+                mediaRecorder = new MediaRecorder(audioStream);
+                const audioChunks = [];
+
+                mediaRecorder.ondataavailable = event => {
+                    audioChunks.push(event.data);
+                };
+
+                mediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    await processSong(audioBlob);
+                };
+
+                // Start recording
+                mediaRecorder.start();
+
+                // Update status
+                updateListeningStatus();
+
+                // Auto-stop after 10 seconds
+                setTimeout(() => {
+                    if (isListening) {
+                        stopListening();
+                    }
+                }, 10000);
+
+            } catch (error) {
+                console.error('Error accessing microphone:', error);
+                alert('Unable to access microphone. Please check your permissions.');
+            }
+        }
+
+        function stopListening() {
+            if (!isListening) return;
+
+            isListening = false;
+            
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+            }
+            
+            if (audioStream) {
+                audioStream.getTracks().forEach(track => track.stop());
+            }
+
+            document.getElementById('listeningOverlay').style.display = 'none';
+        }
+
+        function updateListeningStatus() {
+            const statusElement = document.getElementById('listeningStatus');
+            const messages = [
+                'Analyzing audio patterns...',
+                'Matching with database...',
+                'Processing audio signature...',
+                'Identifying song...',
+                'Almost there...'
+            ];
+            
+            let index = 0;
+            const interval = setInterval(() => {
+                if (!isListening) {
+                    clearInterval(interval);
+                    return;
+                }
+                
+                statusElement.textContent = messages[index];
+                index = (index + 1) % messages.length;
+            }, 1500);
+        }
+
+        async function processSong(audioBlob) {
+            try {
+                // Simulate song recognition (replace with actual API call)
+                const songData = await simulateSongRecognition(audioBlob);
+                
+                // Add to recent searches
+                addToRecentSearches(songData);
+                
+                // Show result
+                showResult(songData);
+                
+            } catch (error) {
+                console.error('Error processing song:', error);
+                showError('Failed to identify song. Please try again.');
+            }
+        }
+
+        async function simulateSongRecognition(audioBlob) {
+            // Simulate API delay
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            // Mock song data (replace with actual API response)
+            const mockSongs = [
+                {
+                    title: "Blinding Lights",
+                    artist: "The Weeknd",
+                    album: "After Hours",
+                    year: 2020,
+                    genre: "Pop",
+                    duration: "3:20",
+                    confidence: 95,
+                    coverArt: "🎵",
+                    lyrics: "I've been trying to call, I've been on my own for long enough...",
+                    similarSongs: ["Can't Feel My Face", "Starboy", "Save Your Tears"]
+                },
+                {
+                    title: "Bad Habit",
+                    artist: "Steve Lacy",
+                    album: "Gemini Rights",
+                    year: 2022,
+                    genre: "R&B",
+                    duration: "3:51",
+                    confidence: 92,
+                    coverArt: "🎶",
+                    lyrics: "I wish I knew, I wish I knew you wanted me...",
+                    similarSongs: ["Dark Red", "Some", "N Side"]
+                },
+                {
+                    title: "As It Was",
+                    artist: "Harry Styles",
+                    album: "Harry's House",
+                    year: 2022,
+                    genre: "Pop Rock",
+                    duration: "2:47",
+                    confidence: 98,
+                    coverArt: "🎤",
+                    lyrics: "Holdin' me back, gravity's holdin' me back...",
+                    similarSongs: ["Watermelon Sugar", "Golden", "Adore You"]
+                }
+            ];
+            
+            return mockSongs[Math.floor(Math.random() * mockSongs.length)];
+        }
+
+        function addToRecentSearches(songData) {
+            // Add timestamp
+            songData.timestamp = new Date().toISOString();
+            
+            // Add to beginning of array
+            recentSearches.unshift(songData);
+            
+            // Keep only last 20 searches
+            if (recentSearches.length > 20) {
+                recentSearches = recentSearches.slice(0, 20);
+            }
+            
+            // Save to localStorage (in production, use a database)
+            try {
+                // Note: Using a simple variable storage since localStorage isn't available in Claude artifacts
+                updateRecentDisplay();
+            } catch (error) {
+                console.error('Error saving recent searches:', error);
+            }
+        }
+
+        function loadRecentSearches() {
+            // In production, load from database or localStorage
+            // For demo, we'll populate with some sample data
+            recentSearches = [
+                {
+                    title: "Flowers",
+                    artist: "Miley Cyrus",
+                    album: "Endless Summer Vacation",
+                    coverArt: "🌸",
+                    timestamp: new Date(Date.now() - 3600000).toISOString()
+                },
+                {
+                    title: "Anti-Hero",
+                    artist: "Taylor Swift",
+                    album: "Midnights",
+                    coverArt: "🌙",
+                    timestamp: new Date(Date.now() - 7200000).toISOString()
+                },
+                {
+                    title: "Unholy",
+                    artist: "Sam Smith ft. Kim Petras",
+                    album: "Gloria",
+                    coverArt: "👹",
+                    timestamp: new Date(Date.now() - 10800000).toISOString()
+                }
+            ];
+            
+            updateRecentDisplay();
+        }
+
+        function updateRecentDisplay() {
+            const recentGrid = document.getElementById('recentGrid');
+            recentGrid.innerHTML = '';
+            
+            recentSearches.forEach(song => {
+                const recentItem = document.createElement('div');
+                recentItem.className = 'recent-item';
+                recentItem.innerHTML = `
+                    <div class="album-art">${song.coverArt}</div>
+                    <div class="song-info">
+                        <h4>${song.title}</h4>
+                        <p>${song.artist}</p>
+                        <p style="font-size: 0.8rem; color: var(--text-secondary);">${timeAgo(song.timestamp)}</p>
+                    </div>
+                `;
+                
+                recentItem.addEventListener('click', () => showResult(song));
+                recentGrid.appendChild(recentItem);
+            });
+        }
+
+        function timeAgo(timestamp) {
+            const now = new Date();
+            const time = new Date(timestamp);
+            const diffInSeconds = Math.floor((now - time) / 1000);
+            
+            if (diffInSeconds < 60) return 'Just now';
+            if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+            if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+            return `${Math.floor(diffInSeconds / 86400)}d ago`;
+        }
+
+        function showResult(songData) {
+            const resultContent = document.getElementById('resultContent');
+            resultContent.innerHTML = `
+                <div style="text-align: center;">
+                    <div style="font-size: 4rem; margin-bottom: 20px;">${songData.coverArt}</div>
+                    <h2 style="color: var(--text-primary); margin-bottom: 10px;">${songData.title}</h2>
+                    <p style="color: var(--text-secondary); font-size: 1.2rem; margin-bottom: 20px;">${songData.artist}</p>
+                    
+                    <div style="background: var(--glass-bg); padding: 20px; border-radius: 15px; margin: 20px 0; text-align: left;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                            <div><strong>Album:</strong> ${songData.album}</div>
+                            <div><strong>Year:</strong> ${songData.year}</div>
+                            <div><strong>Genre:</strong> ${songData.genre}</div>
+                            <div><strong>Duration:</strong> ${songData.duration}</div>
+                        </div>
+                        ${songData.confidence ? `<div style="margin-top: 15px;"><strong>Confidence:</strong> ${songData.confidence}%</div>` : ''}
+                    </div>
+                    
+                    ${songData.lyrics ? `
+                        <div style="background: var(--glass-bg); padding: 20px; border-radius: 15px; margin: 20px 0; text-align: left;">
+                            <h4 style="margin-bottom: 10px;">Lyrics Preview:</h4>
+                            <p style="font-style: italic; color: var(--text-secondary);">${songData.lyrics}</p>
+                        </div>
+                    ` : ''}
+                    
+                    ${songData.similarSongs ? `
+                        <div style="background: var(--glass-bg); padding: 20px; border-radius: 15px; margin: 20px 0; text-align: left;">
+                            <h4 style="margin-bottom: 10px;">Similar Songs:</h4>
+                            ${songData.similarSongs.map(song => `<span style="background: var(--accent-gradient); color: white; padding: 5px 10px; border-radius: 20px; margin: 5px; display: inline-block; font-size: 0.9rem;">${song}</span>`).join('')}
+                        </div>
+                    ` : ''}
+                    
+                    <div style="display: flex; gap: 15px; justify-content: center; margin-top: 30px;">
+                        <button onclick="shareSong('${songData.title}', '${songData.artist}')" style="padding: 12px 25px; background: var(--secondary-gradient); border: none; border-radius: 25px; color: white; cursor: pointer; font-size: 1rem; transition: all 0.3s ease;">
+                            <i class="fas fa-share"></i> Share
+                        </button>
+                        <button onclick="addToPlaylist('${songData.title}', '${songData.artist}')" style="padding: 12px 25px; background: var(--primary-gradient); border: none; border-radius: 25px; color: white; cursor: pointer; font-size: 1rem; transition: all 0.3s ease;">
+                            <i class="fas fa-plus"></i> Add to Playlist
+                        </button>
+                        <button onclick="findOnSpotify('${songData.title}', '${songData.artist}')" style="padding: 12px 25px; background: var(--success-color); border: none; border-radius: 25px; color: white; cursor: pointer; font-size: 1rem; transition: all 0.3s ease;">
+                            <i class="fab fa-spotify"></i> Open in Spotify
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('resultModal').style.display = 'flex';
+        }
+
+        function showError(message) {
+            const resultContent = document.getElementById('resultContent');
+            resultContent.innerHTML = `
+                <div style="text-align: center;">
+                    <div style="font-size: 4rem; margin-bottom: 20px; color: var(--error-color);">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <h2 style="color: var(--text-primary); margin-bottom: 10px;">Oops!</h2>
+                    <p style="color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 30px;">${message}</p>
+                    <button onclick="closeModal()" style="padding: 12px 25px; background: var(--primary-gradient); border: none; border-radius: 25px; color: white; cursor: pointer; font-size: 1rem;">
+                        Try Again
+                    </button>
+                </div>
+            `;
+            
+            document.getElementById('resultModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('resultModal').style.display = 'none';
+        }
+
+        function shareSong(title, artist) {
+            if (navigator.share) {
+                navigator.share({
+                    title: `${title} by ${artist}`,
+                    text: `Check out this song I discovered on Tehillz!`,
+                    url: window.location.href
+                });
+            } else {
+                // Fallback for browsers that don't support Web Share API
+                const text = `Check out "${title}" by ${artist} - discovered on Tehillz!`;
+                navigator.clipboard.writeText(text).then(() => {
+                    alert('Song info copied to clipboard!');
+                });
+            }
+        }
+
+        function addToPlaylist(title, artist) {
+            // Simulate adding to playlist
+            const playlists = ['Favorites', 'Discovered', 'Party Mix', 'Chill Vibes'];
+            const playlist = playlists[Math.floor(Math.random() * playlists.length)];
+            
+            // Show success message
+            showNotification(`"${title}" added to ${playlist} playlist!`, 'success');
+        }
+
+        function findOnSpotify(title, artist) {
+            // Open Spotify search
+            const query = encodeURIComponent(`${title} ${artist}`);
+            window.open(`https://open.spotify.com/search/${query}`, '_blank');
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 100px;
+                right: 30px;
+                background: ${type === 'success' ? 'var(--success-color)' : 'var(--primary-gradient)'};
+                color: white;
+                padding: 15px 25px;
+                border-radius: 10px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                z-index: 4000;
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+
+        // AI Assistant Functions
+        function toggleAIChat() {
+            const aiChat = document.getElementById('aiChat');
+            aiChat.style.display = aiChat.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        function sendAIMessage() {
+            const input = document.getElementById('aiInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message
+            addAIMessage(message, 'user');
+            input.value = '';
+            
+            // Simulate AI response
+            setTimeout(() => {
+                const response = generateAIResponse(message);
+                addAIMessage(response, 'assistant');
+            }, 1000);
+        }
+
+        function addAIMessage(message, sender) {
+            const messagesContainer = document.getElementById('aiMessages');
+            const messageDiv = document.createElement('div');
+            
+            messageDiv.style.cssText = `
+                background: ${sender === 'user' ? 'var(--primary-gradient)' : 'var(--glass-bg)'};
+                color: white;
+                padding: 12px 15px;
+                border-radius: 15px;
+                margin-bottom: 10px;
+                max-width: 85%;
+                margin-left: ${sender === 'user' ? 'auto' : '0'};
+                margin-right: ${sender === 'user' ? '0' : 'auto'};
+                font-size: 0.9rem;
+                line-height: 1.4;
+            `;
+            
+            messageDiv.textContent = message;
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function generateAIResponse(userMessage) {
+            const message = userMessage.toLowerCase();
+            
+            // Simple AI responses (replace with actual AI API)
+            if (message.includes('recommend') || message.includes('suggest')) {
+                return "Based on your recent discoveries, I'd recommend checking out some indie pop artists like Clairo, Boy Pablo, or Rex Orange County. They have similar vibes to what you've been listening to!";
+            } else if (message.includes('genre') || message.includes('style')) {
+                return "I can help you explore different genres! Are you interested in discovering new electronic music, exploring world music, or diving deeper into a specific genre you already love?";
+            } else if (message.includes('artist') || message.includes('who')) {
+                return "I can tell you about any artist you're curious about! Just mention their name and I'll share interesting facts, similar artists, and their most popular songs.";
+            } else if (message.includes('playlist')) {
+                return "I can help you create the perfect playlist! What's the vibe you're going for? Workout, study, party, or something else?";
+            } else if (message.includes('hello') || message.includes('hi')) {
+                return "Hello! I'm here to help you discover amazing music. You can ask me about songs, artists, genres, or get personalized recommendations!";
+            } else {
+                return "That's interesting! I'm here to help with anything music-related. Try asking me about recommendations, artist info, or playlist ideas!";
+            }
+        }
+
+        // Advanced Features
+        function initializeAdvancedFeatures() {
+            // Music mood detection
+            detectMusicMood();
+            
+            // Social features
+            initializeSocialFeatures();
+            
+            // Voice commands
+            initializeVoiceCommands();
+        }
+
+        function detectMusicMood() {
+            // Simulate mood detection based on time of day
+            const hour = new Date().getHours();
+            let mood;
+            
+            if (hour >= 6 && hour < 12) {
+                mood = 'energetic';
+            } else if (hour >= 12 && hour < 17) {
+                mood = 'focus';
+            } else if (hour >= 17 && hour < 21) {
+                mood = 'chill';
+            } else {
+                mood = 'ambient';
+            }
+            
+            // Update UI based on mood
+            updateMoodBasedUI(mood);
+        }
+
+        function updateMoodBasedUI(mood) {
+            const moodColors = {
+                energetic: 'linear-gradient(135deg, #ff6b6b 0%, #ffa726 100%)',
+                focus: 'linear-gradient(135deg, #4fc3f7 0%, #29b6f6 100%)',
+                chill: 'linear-gradient(135deg, #81c784 0%, #66bb6a 100%)',
+                ambient: 'linear-gradient(135deg, #ba68c8 0%, #9c27b0 100%)'
+            };
+            
+            // Subtly adjust the background based on mood
+            const bgElement = document.querySelector('.animated-bg');
+            if (bgElement) {
+                bgElement.style.background = moodColors[mood];
+                bgElement.style.opacity = '0.1';
+            }
+        }
+
+        function initializeSocialFeatures() {
+            // Simulate friend activity
+            const friendActivity = [
+                { name: 'Alex', song: 'Watermelon Sugar', artist: 'Harry Styles', time: '2m ago' },
+                { name: 'Sarah', song: 'Good 4 U', artist: 'Olivia Rodrigo', time: '5m ago' },
+                { name: 'Mike', song: 'Levitating', artist: 'Dua Lipa', time: '12m ago' }
+            ];
+            
+            // Add friend activity to UI (this would be shown in a dedicated section)
+            console.log('Friend activity:', friendActivity);
+        }
+
+        function initializeVoiceCommands() {
+            if ('webkitSpeechRecognition' in window) {
+                const recognition = new webkitSpeechRecognition();
+                recognition.continuous = false;
+                recognition.interimResults = false;
+                recognition.lang = 'en-US';
+                
+                recognition.onresult = function(event) {
+                    const command = event.results[0][0].transcript.toLowerCase();
+                    handleVoiceCommand(command);
+                };
+                
+                // Add voice command button (optional)
+                // This would be implemented in a full production version
+            }
+        }
+
+        function handleVoiceCommand(command) {
+            if (command.includes('listen') || command.includes('identify')) {
+                startListening();
+            } else if (command.includes('recent') || command.includes('history')) {
+                document.getElementById('recent').scrollIntoView({ behavior: 'smooth' });
+            } else if (command.includes('help')) {
+                toggleAIChat();
+            }
+        }
+
+        // Initialize advanced features when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(initializeAdvancedFeatures, 2000);
+        });
+
+        // Performance optimization
+        function optimizePerformance() {
+            // Lazy load images
+            const images = document.querySelectorAll('img[data-src]');
+            const imageObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        img.src = img.dataset.src;
+                        img.removeAttribute('data-src');
+                        imageObserver.unobserve(img);
+                    }
+                });
+            });
+            
+            images.forEach(img => imageObserver.observe(img));
+            
+            // Debounce resize events
+            let resizeTimeout;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    // Handle resize
+                    console.log('Window resized');
+                }, 250);
+            });
+        }
+
+        // Call optimization function
+        optimizePerformance();
+
+        // Library functionality
+let userLibrary = [];
+
+function addToLibrary(songData) {
+    // Check if song already exists in library
+    const exists = userLibrary.some(song => 
+        song.title === songData.title && song.artist === songData.artist
+    );
+    
+    if (!exists) {
+        songData.addedAt = new Date().toISOString();
+        userLibrary.push(songData);
+        updateLibraryDisplay();
+        showNotification(`"${songData.title}" added to your library!`, 'success');
+    } else {
+        showNotification(`"${songData.title}" is already in your library`, 'info');
+    }
+}
+
+function updateLibraryDisplay() {
+    const libraryGrid = document.getElementById('libraryGrid');
+    
+    if (userLibrary.length === 0) {
+        libraryGrid.innerHTML = `
+            <div class="empty-library">
+                <i class="fas fa-music"></i>
+                <h3>Your library is empty</h3>
+                <p>Start saving songs to see them here</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // Sort library based on selected option
+    const sortOption = document.getElementById('sortLibrary').value;
+    let sortedLibrary = [...userLibrary];
+    
+    switch (sortOption) {
+        case 'title':
+            sortedLibrary.sort((a, b) => a.title.localeCompare(b.title));
+            break;
+        case 'artist':
+            sortedLibrary.sort((a, b) => a.artist.localeCompare(b.artist));
+            break;
+        case 'oldest':
+            sortedLibrary.sort((a, b) => new Date(a.addedAt) - new Date(b.addedAt));
+            break;
+        default: // 'recent'
+            sortedLibrary.sort((a, b) => new Date(b.addedAt) - new Date(a.addedAt));
+    }
+    
+    // Filter based on search
+    const searchTerm = document.getElementById('librarySearch').value.toLowerCase();
+    if (searchTerm) {
+        sortedLibrary = sortedLibrary.filter(song => 
+            song.title.toLowerCase().includes(searchTerm) || 
+            song.artist.toLowerCase().includes(searchTerm)
+        );
+    }
+    
+    // Display library items
+    libraryGrid.innerHTML = '';
+    sortedLibrary.forEach(song => {
+        const libraryItem = document.createElement('div');
+        libraryItem.className = 'library-item';
+        libraryItem.innerHTML = `
+            <div class="album-art">${song.coverArt || '🎵'}</div>
+            <div class="song-info">
+                <h4>${song.title}</h4>
+                <p>${song.artist}</p>
+            </div>
+            <div class="song-actions">
+                <button onclick="playSong('${song.title}', '${song.artist}')"><i class="fas fa-play"></i></button>
+                <button onclick="removeFromLibrary('${song.title}', '${song.artist}')"><i class="fas fa-trash"></i></button>
+            </div>
+        `;
+        libraryGrid.appendChild(libraryItem);
+    });
+}
+
+function removeFromLibrary(title, artist) {
+    userLibrary = userLibrary.filter(song => 
+        !(song.title === title && song.artist === artist)
+    );
+    updateLibraryDisplay();
+    showNotification(`"${title}" removed from library`, 'info');
+}
+
+function playSong(title, artist) {
+    // In a real app, this would play the song
+    showNotification(`Now playing "${title}" by ${artist}`, 'success');
+}
+
+// Add event listeners for library controls
+document.getElementById('librarySearch').addEventListener('input', updateLibraryDisplay);
+document.getElementById('sortLibrary').addEventListener('change', updateLibraryDisplay);
+
+// Update the addToPlaylist function to also add to library
+function addToPlaylist(title, artist) {
+    // Find the song in recent searches
+    const song = recentSearches.find(s => s.title === title && s.artist === artist);
+    if (song) {
+        addToLibrary(song);
+    }
+    
+    // Original playlist functionality
+    const playlists = ['Favorites', 'Discovered', 'Party Mix', 'Chill Vibes'];
+    const playlist = playlists[Math.floor(Math.random() * playlists.length)];
+    showNotification(`"${title}" added to ${playlist} playlist!`, 'success');
+}
+
+// Initialize library with some sample data
+function initializeLibrary() {
+    userLibrary = [
+        {
+            title: "Blinding Lights",
+            artist: "The Weeknd",
+            album: "After Hours",
+            coverArt: "🎵",
+            addedAt: new Date(Date.now() - 86400000).toISOString()
+        },
+        {
+            title: "Save Your Tears",
+            artist: "The Weeknd",
+            album: "After Hours",
+            coverArt: "🎶",
+            addedAt: new Date(Date.now() - 172800000).toISOString()
+        },
+        {
+            title: "Stay",
+            artist: "The Kid LAROI, Justin Bieber",
+            album: "F*CK LOVE 3: OVER YOU",
+            coverArt: "🎤",
+            addedAt: new Date(Date.now() - 259200000).toISOString()
+        }
+    ];
+    updateLibraryDisplay();
+}
+
+// Initialize the library when the page loads
+document.addEventListener('DOMContentLoaded', initializeLibrary);
+
+// Animate stats in about section
+function animateStats() {
+    const stats = {
+        songsIdentified: { target: 12500, current: 0, increment: 100 },
+        activeUsers: { target: 52000, current: 0, increment: 500 },
+        countries: { target: 128, current: 0, increment: 1 }
+    };
+    
+    const statElements = {
+        songsIdentified: document.getElementById('songsIdentified'),
+        activeUsers: document.getElementById('activeUsers'),
+        countries: document.getElementById('countries')
+    };
+    
+    const interval = setInterval(() => {
+        let allComplete = true;
+        
+        for (const stat in stats) {
+            if (stats[stat].current < stats[stat].target) {
+                stats[stat].current = Math.min(
+                    stats[stat].current + stats[stat].increment,
+                    stats[stat].target
+                );
+                statElements[stat].textContent = stats[stat].current.toLocaleString() + '+';
+                allComplete = false;
+            }
+        }
+        
+        if (allComplete) {
+            clearInterval(interval);
+        }
+    }, 50);
+}
+
+// Start animating stats when about section is visible
+const aboutSection = document.getElementById('about');
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            animateStats();
+            observer.unobserve(entry.target);
+        }
+    });
+}, { threshold: 0.5 });
+
+observer.observe(aboutSection);
+    </script>
+</body>
+</html>
